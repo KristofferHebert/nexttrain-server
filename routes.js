@@ -1,111 +1,48 @@
 import express from 'express'
-import gtfs from 'gtfs'
+import xml2json from 'xml2json'
+import config from './config.js'
 
 const routes = express.Router()
 
-const agency_key = 'county-connection'
+// configure request
+const rqst = require('request')
+const request = require('cached-request')(rqst)
+request.setCacheDirectory('/tmp/cache')
 
-routes.get('/', (req, res) => {
-    res.send('hey')
-})
+// pass request to BART API
+routes.get('*', (req, res) => {
+    const url = config.base + req.originalUrl
+    console.log(url)
 
-// get stops near lat/ long
-routes.get('/near/:lat/:long/:radius?', (req, res) => {
-
-    const lat = Number(req.params.lat)
-    const long = Number(req.params.long)
-    const radius = Number(req.params.radius) || 20
-
-
-    if(!lat || !long){
-        return res.send({
-            status: 'Bad Request',
-            message: 'Please provide lat/long',
-        })
+    // set cache for 24hrs
+    const options = {
+        url: url,
+        ttl: 86400
     }
 
-    // find routes near lat/long area
-    gtfs.getStopsByDistance(lat, long, radius, function(err, rts) {
-            if(err) {
-                console.log(err)
-                return res.send({
-                    status: 'Bad Request',
-                    message: 'No stops within '+ radius +' miles',
-                    error: err
-                })
-            }
+    request(options, function (error, response, body) {
+      if (error) {
+        return req.json({
+            error: error
+        })
+      }
 
-            return res.send({
-                status: 'Success',
-                data: rts
-            })
+      // if bad request send error
+      if(response.statusCode !== 200){
+          return res.json({
+              status: "bad request"
+          })
+      }
 
+      // convert data from XML to JSON
+      let data = JSON.parse(xml2json.toJson(body))
+      data = data.root
+
+      res.json({
+          status: "success",
+          data: data
+      })
     })
-
-})
-
-// get stops on route by route_id and direction
-routes.get('/stops/:route_id/:direction_id/:radius?', (req, res) => {
-
-    const route_id = Number(req.params.route_id)
-    const direction_id = Number(req.params.direction_id)
-
-    if(!route_id || !direction_id){
-        return res.send({
-            status: 'Bad Request',
-            message: 'Please provide route_id/direction_id',
-        })
-    }
-
-    // find stops within route
-    gtfs.getStopsByRoute(agency_key, route_id, direction_id, function(err, stops) {
-            if(err) {
-                console.log(err)
-                return res.send({
-                    status: 'Bad Request',
-                    message: 'No stops within route',
-                    error: err
-                })
-            }
-
-            return res.send({
-                status: 'Success',
-                data: stops
-            })
-
-    })
-
-})
-
-// get stops on route by route_id and direction
-routes.get('/routes/:stop_id', (req, res) => {
-
-    const stop_id = Number(req.params.stop_id)
-
-    if(!stop_id){
-        return res.send({
-            status: 'Bad Request',
-            message: 'No routes for the given stop',
-        })
-    }
-
-    console.log(agency_key, stop_id)
-
-    gtfs.getRoutesByStop(agency_key, stop_id, function(err, rts) {
-        if(err) {
-            console.log(err)
-            return res.send({
-                status: 'Bad Request',
-                message: 'No stops within route',
-                error: err
-            })
-        }
-
-        return res.send({
-            status: 'Success',
-            data: rts
-        })
-    });
 
 })
 
