@@ -7,7 +7,7 @@ const routes = express.Router()
 // configure request
 const rqst = require('request')
 const request = require('cached-request')(rqst)
-request.setCacheDirectory('/tmp/cache')
+request.setCacheDirectory('tmp/cache')
 
 // pass request to BART API
 routes.get('*', (req, res) => {
