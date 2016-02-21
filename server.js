@@ -18,6 +18,6 @@ app.use(bodyParser.json())
 app.use(routes)
 
 // Launch app on PORT 8082
-app.listen(8082, () => {
-    console.log('Listening on PORT 8082')
+app.listen(8084, () => {
+    console.log('Listening on PORT 8084')
 })
