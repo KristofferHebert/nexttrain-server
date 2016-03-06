@@ -19,5 +19,6 @@
     "pm2": "^1.0.1",
     "request": "^2.69.0",
     "xml2json": "^0.9.0"
-  }
+  },
+  "devDependencies": {}
 }
