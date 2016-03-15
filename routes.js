@@ -2,47 +2,57 @@ import express from 'express'
 import xml2json from 'xml2json'
 import config from './config.js'
 
+//const stations = ["12TH", "16TH", "19TH", "24TH", "ASHB", "BALB", "BAYF", "CAST", "CIVC", "COLS", "COLM", "CONC", "DALY", "DBRK", "DUBL", "DELN", "PLZA", "EMBR", "FRMT", "FTVL", "GLEN", "HAYW", "LAFY", "LAKE", "MCAR", "MLBR", "MONT", "NBRK", "NCON", "OAKL", "ORIN", "PITT", "PHIL", "POWL", "RICH", "ROCK", "SBRN", "SFIA", "SANL", "SHAY", "SSAN", "UCTY", "WCRK", "WDUB", "WOAK"]
+
 const routes = express.Router()
 
 // configure request
-const rqst = require('request')
-const request = require('cached-request')(rqst)
-request.setCacheDirectory('tmp/cache')
+const request = require('request')
+// const request = require('cached-request')(rqst)
+// request.setCacheDirectory('tmp/cache')
 
-// pass request to BART API
+// pass All requests to BART API
 routes.get('*', (req, res) => {
-    const url = config.base + req.originalUrl
-    console.log(url)
+	let url = config.base + req.originalUrl
+	let options = {
+		url: url,
+	}
 
-    // set cache for 24hrs
-    const options = {
-        url: url,
-        ttl: 86400
+    const xmlOptions = {
+        object: true,
+        coerce: true,
+        sanitize: true,
+        trim: true
     }
 
-    request(options, function (error, response, body) {
-      if (error) {
-        return req.json({
-            error: error
-        })
-      }
+	request(options, function(error, response, body) {
 
-      // if bad request send error
-      if(response.statusCode !== 200){
-          return res.json({
-              status: "bad request"
-          })
-      }
+        // error send error response
+		if (error) {
+			return req.json({
+				error: error
+			})
+		}
 
-      // convert data from XML to JSON
-      let data = JSON.parse(xml2json.toJson(body))
-      data = data.root
+		// if bad request send error
+		if (response.statusCode !== 200) {
+			return res.json({
+				error: "bad request"
+			})
+		}
 
-      res.json({
-          status: "success",
-          data: data
-      })
-    })
+		// Convert data from XML to JSON
+		let data = xml2json.toJson(body, xmlOptions)
+
+        // Disable caching for content files
+        res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.header("Pragma", "no-cache");
+        res.header("Expires", 0);
+
+		return res.json({
+			data: data.root
+		})
+	})
 
 })
 
