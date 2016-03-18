@@ -99,11 +99,13 @@ routes.get('/all', function(req, res){
     let itemPromises = stations.map(fetchXML);
 
     Promise.all(itemPromises)
-      .then(function(results) {
-         results.forEach(function(item) {
+      .then(function(response) {
+        var results = {}
+         response.forEach(function(item) {
+             results[item.uri] = item
          });
 
-         res.json({ result: results })
+         res.json({ stations : results })
       })
       .catch(function(err) {
         console.log("Failed:", err);
