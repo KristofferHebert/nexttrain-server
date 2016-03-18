@@ -3,3 +3,4 @@ node_modules
 config.js
 tmp/cache/*
 tmp/cache
+*.log
