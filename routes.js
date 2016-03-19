@@ -10,7 +10,7 @@ const request = require('request')
 // request.setCacheDirectory('tmp/cache')
 
 // pass All requests to BART API
-routes.get('/test', (req, res) => {
+routes.get('/ssdfsdf*', (req, res) => {
 	let url = config.base + req.originalUrl
 	let options = {
 		url: url,
@@ -113,5 +113,69 @@ routes.get('/all', function(req, res){
       });
 
 })
+
+routes.get('/stnsched/:abbr', (req, res) => {
+    let abbr = req.params['abbr'];
+
+    if(!abbr) {
+        return res.json({
+            error: "bad request, please provide abbr for station"
+        })
+    }
+
+	let url = config.base + "/api/sched.aspx?cmd=stnsched&orig=" + abbr + "&key=MW9S-E7SL-26DU-VV8V"
+
+	let options = {
+		url: url,
+	}
+
+    const xmlOptions = {
+        object: true,
+        coerce: true,
+        sanitize: true,
+        trim: true
+    }
+
+	request(options, function(error, response, body) {
+
+        // error send error response
+		if (error) {
+			return req.json({
+				error: error
+			})
+		}
+
+		// if bad request send error
+		if (response.statusCode !== 200) {
+			return res.json({
+				error: "bad request"
+			})
+		}
+
+		// Convert data from XML to JSON
+		let data = xml2json.toJson(body, xmlOptions)
+
+        if(data){
+            data.root.fullname = data.root.station.name
+            data.root.name = data.root.station.abbr
+            delete data.root.date
+            delete data.root.uri
+            delete data.root.station.name
+            delete data.root.station.abbr
+            delete data.root.message
+
+            data.root.station.item.map((itm) => {
+                delete itm.bikeflag
+                return itm
+            })
+        }
+
+		return res.json({
+			data: data.root
+		})
+	})
+
+})
+
 
 export default routes
