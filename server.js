@@ -2,10 +2,15 @@
 
 import express from 'express'
 import bodyParser from 'body-parser'
+import compression from 'compression'
 
 import routes from './routes'
 
 const app = express()
+
+
+// Compress all requests
+app.use(compression())
 
 // Enable URL parser
 app.use(bodyParser.urlencoded({ extended: false }))
