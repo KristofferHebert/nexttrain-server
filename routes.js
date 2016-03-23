@@ -10,8 +10,11 @@ const request = require('request')
 // request.setCacheDirectory('tmp/cache')
 
 // pass All requests to BART API
-routes.get('/ssdfsdf*', (req, res) => {
-	let url = config.base + req.originalUrl
+routes.get('/realtime/', (req, res) => {
+
+    let url = req.params['url']
+
+	let url = config.base + url
 	let options = {
 		url: url,
 	}
