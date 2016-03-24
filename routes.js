@@ -14,7 +14,13 @@ routes.get('/realtime/', (req, res) => {
 
     let url = req.params['url']
 
-	let url = config.base + url
+    if(!url) {
+        return res.json({
+            error: "bad request, please provide url for realtime use"
+        })
+    }
+
+	let url = config.base + url + '&key=' + config.key
 	let options = {
 		url: url,
 	}
