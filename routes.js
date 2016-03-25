@@ -12,15 +12,17 @@ const request = require('request')
 // pass All requests to BART API
 routes.get('/realtime/', (req, res) => {
 
-    let url = req.params['url']
+    var url = req.params['url']
+
+    let abbr = req.params['abbr'];
 
     if(!url) {
         return res.json({
-            error: "bad request, please provide url for realtime use"
+            error: "bad request, please provide url for station"
         })
     }
 
-	let url = config.base + url + '&key=' + config.key
+	var url = config.base + url + '&key=' + config.key
 	let options = {
 		url: url,
 	}
@@ -69,7 +71,7 @@ routes.get('/all', function(req, res){
     function fetchXML(station) {
       return new Promise((resolve, reject) => {
 
-          let url = "http://api.bart.gov/api/sched.aspx?cmd=stnsched&orig=" + station + "&key=MW9S-E7SL-26DU-VV8V"
+          var url = 'http://localhost:' + config.port + "/stnsched/" + station
 
           let options = {
       		url: url,
@@ -87,17 +89,9 @@ routes.get('/all', function(req, res){
                  return       reject(error)
               }
 
-              // Convert data from XML to JSON
-              const xmlOptions = {
-                  object: true,
-                  coerce: true,
-                  sanitize: true,
-                  trim: true
-              }
+              var body = JSON.parse(body);
 
-              let data = xml2json.toJson(body, xmlOptions)
-
-              return resolve(data.root)
+              return resolve(body.data)
 
           })
       })
@@ -111,10 +105,10 @@ routes.get('/all', function(req, res){
       .then(function(response) {
         var results = {}
          response.forEach(function(item) {
-             results[item.uri] = item
+             results[item.name] = item
          });
 
-         res.json({ stations : results })
+         res.json({ data : results })
       })
       .catch(function(err) {
         console.log("Failed:", err);
@@ -132,7 +126,7 @@ routes.get('/stnsched/:abbr', (req, res) => {
         })
     }
 
-	let url = config.base + "/api/sched.aspx?cmd=stnsched&orig=" + abbr + "&key=MW9S-E7SL-26DU-VV8V"
+	var url = config.base + "/api/sched.aspx?cmd=stnsched&orig=" + abbr + "&key=MW9S-E7SL-26DU-VV8V"
 
 	let options = {
 		url: url,
