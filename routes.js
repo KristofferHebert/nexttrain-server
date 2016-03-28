@@ -1,6 +1,7 @@
 import express from 'express'
 import xml2json from 'xml2json'
 import config from './config.js'
+import stations from './stations.js'
 
 const routes = express.Router()
 
@@ -13,8 +14,6 @@ const request = require('request')
 routes.get('/realtime/', (req, res) => {
 
     var url = req.params['url']
-
-    let abbr = req.params['abbr'];
 
     if(!url) {
         return res.json({
@@ -103,9 +102,10 @@ routes.get('/all', function(req, res){
 
     Promise.all(itemPromises)
       .then(function(response) {
-        var results = {}
+        var results = []
          response.forEach(function(item) {
-             results[item.name] = item
+             item.station = JSON.stringify(item.station)
+             results.push(item)
          });
 
          res.json({ data : results })
@@ -117,6 +117,12 @@ routes.get('/all', function(req, res){
 
 })
 
+// get cached stations
+routes.get('/stations', (req, res) => {
+    res.json(stations)
+})
+
+// get realtime schedule
 routes.get('/stnsched/:abbr', (req, res) => {
     let abbr = req.params['abbr'];
 
