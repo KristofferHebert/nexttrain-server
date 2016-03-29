@@ -10,7 +10,7 @@ const request = require('request')
 // const request = require('cached-request')(rqst)
 // request.setCacheDirectory('tmp/cache')
 
-// pass All requests to BART API
+// pass realtime requests to BART API
 routes.get('/realtime/', (req, res) => {
 
     var url = req.params['url']
@@ -64,8 +64,8 @@ routes.get('/realtime/', (req, res) => {
 
 })
 
+// Fetch all station details
 routes.get('/all', function(req, res){
-
 
     function fetchXML(station) {
       return new Promise((resolve, reject) => {
@@ -117,12 +117,12 @@ routes.get('/all', function(req, res){
 
 })
 
-// get cached stations
+// get cached stations from station.js
 routes.get('/stations', (req, res) => {
     res.json(stations)
 })
 
-// get realtime schedule
+// get station schedule
 routes.get('/stnsched/:abbr', (req, res) => {
     let abbr = req.params['abbr'];
 
