@@ -11,18 +11,20 @@ const request = require('request')
 // request.setCacheDirectory('tmp/cache')
 
 // pass realtime requests to BART API
-routes.get('/realtime/', (req, res) => {
+routes.get('/realtime/:startStaton/:endStation', (req, res) => {
 
-    var url = req.params['url']
+    const startStaton = req.params['startStaton']
+    const endStation = req.params['endStation']
 
-    if(!url) {
+    if(!startStaton || !endStation) {
         return res.json({
-            error: "bad request, please provide url for station"
+            error: "bad request, please provide startStation or endStation for station"
         })
     }
 
-	var url = config.base + url + '&key=' + config.key
-	let options = {
+	const url = config.base +'/api/sched.aspx?cmd=depart&orig='+ startStaton +'&dest='+ endStation +'&type=departure&date=now&time=now&a=4&key=' + config.key
+    
+    let options = {
 		url: url,
 	}
 
